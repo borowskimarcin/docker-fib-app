@@ -1,0 +1,21 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t marbor1/fib-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run marbor1/fib-test npm run test:ci
+
+after_success:
+  - docker build -t marbor1/multi-client ./client
+  - docker build -t marbor1/multi-nginx ./nginx
+  - docker build -t marbor1/multi-server ./server
+  - docker build -t marbor1/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push marbor1/multi-client
+  - docker push marbor1/multi-nginx
+  - docker push marbor1/multi-server
+  - docker push marbor1/multi-worker
+
